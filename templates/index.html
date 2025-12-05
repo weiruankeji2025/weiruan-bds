@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 动态读取后台设置的SEO信息 -->
+    <title>{{ site_title or '威软导航' }} - {{ site_desc }}</title>
+    <meta name="keywords" content="{{ site_keywords }}">
+    <meta name="description" content="{{ site_desc }}">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+        .glass-nav { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .glass-card { background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); transition: all 0.3s; position: relative; overflow: hidden; }
+        .glass-card:hover { transform: translateY(-4px); background: rgba(30, 41, 59, 0.8); border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+        
+        /* 推荐角标 */
+        .ribbon {
+            position: absolute; top: 0; right: 0;
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, transparent 50%, rgba(234, 179, 8, 0.2) 50%);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <nav class="fixed w-full z-50 glass-nav h-16">
+        <div class="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded flex items-center justify-center font-bold text-white shadow-lg shadow-blue-900/50">W</div>
+                <span class="font-bold text-xl tracking-wide text-white">{{ site_title or '威软导航' }}</span>
+            </div>
+            <div class="flex gap-4 items-center">
+                <a href="/login" class="text-sm text-slate-400 hover:text-white transition-colors">管理后台</a>
+                <button onclick="toggleModal()" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-lg shadow-blue-600/20 flex items-center gap-2">
+                    <i class="ri-add-line"></i> <span class="hidden sm:inline">申请收录</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主体 -->
+    <main class="pt-28 pb-12 max-w-7xl mx-auto px-4">
+        
+        <!-- 头部欢迎语 -->
+        <div class="text-center mb-16 fade-in">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">{{ site_title or '威软导航' }}</span>
+            </h1>
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto">{{ site_desc or '极简、纯净、高效的网址导航服务' }}</p>
+        </div>
+
+        <!-- 分类遍历 -->
+        {% for item in categories %}
+        <div class="mb-14">
+            <div class="flex items-center gap-3 mb-6 border-b border-slate-800 pb-2">
+                <i class="ri-hashtag text-blue-500 text-xl"></i>
+                <h2 class="text-xl font-bold text-white tracking-wide">{{ item.category.name }}</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                {% for link in item.links %}
+                <a href="/go/{{ link.id }}" target="_blank" class="glass-card p-4 rounded-xl flex items-start gap-3 group">
+                    <!-- 推荐标记 -->
+                    {% if link.is_recommended %}
+                    <div class="absolute top-2 right-2 text-yellow-500 text-xs" title="推荐链接">
+                        <i class="ri-star-fill"></i>
+                    </div>
+                    {% endif %}
+
+                    <img src="{{ link.icon if link.icon else 'https://www.google.com/s2/favicons?domain=' + link.url + '&sz=64' }}" 
+                         class="w-10 h-10 rounded-lg bg-slate-800/80 p-1.5 object-contain group-hover:scale-110 transition-transform shrink-0" 
+                         onerror="this.src='https://via.placeholder.com/64/1e293b/ffffff?text=W'">
+                    
+                    <div class="overflow-hidden flex-1 min-w-0">
+                        <h4 class="text-slate-100 font-bold truncate group-hover:text-blue-400 transition-colors text-[15px]">{{ link.title }}</h4>
+                        <p class="text-slate-500 text-xs mt-1 line-clamp-1 h-4">{{ link.desc or '暂无描述' }}</p>
+                        <div class="mt-2 flex items-center gap-3 text-[10px] text-slate-600">
+                            <span class="flex items-center gap-1"><i class="ri-eye-line"></i> {{ link.clicks }}</span>
+                            {% if link.is_recommended %}
+                            <span class="text-yellow-600/70 bg-yellow-900/10 px-1 rounded">推荐</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </main>
+
+    <!-- 底部 -->
+    <footer class="border-t border-slate-800/50 py-8 text-center mt-auto">
+        <p class="text-slate-600 text-sm">
+            &copy; 2025 {{ site_title }}. Powered by 威软科技开发.
+        </p>
+    </footer>
+
+    <!-- 收录模态框 (保持功能不变，样式微调) -->
+    <div id="addModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative m-4">
+            <button onclick="toggleModal()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i class="ri-close-line text-2xl"></i></button>
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2"><i class="ri-upload-cloud-2-line text-blue-500"></i> 申请收录</h3>
+            <form id="addForm" class="space-y-4">
+                <div>
+                    <input type="text" id="title" required placeholder="网站名称" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 outline-none transition-colors">
+                </div>
+                <div>
+                    <input type="url" id="url" required placeholder="网址 (https://...)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 outline-none transition-colors">
+                </div>
+                <div>
+                    <select id="category_id" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 outline-none appearance-none">
+                        {% for cat in all_cats %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <input type="text" id="desc" placeholder="一句话简介" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white focus:border-blue-500 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-blue-900/30 mt-2">提交审核</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function toggleModal() {
+            const el = document.getElementById('addModal');
+            el.classList.toggle('hidden');
+            el.classList.toggle('flex');
+        }
+
+        document.getElementById('addForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button');
+            const oldText = btn.innerText;
+            btn.innerText = '提交中...'; btn.disabled = true;
+
+            const data = {
+                title: document.getElementById('title').value,
+                url: document.getElementById('url').value,
+                category_id: document.getElementById('category_id').value,
+                desc: document.getElementById('desc').value
+            };
+            
+            try {
+                const res = await fetch('/api/submit', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                alert(result.message);
+                if(result.success) {
+                    this.reset();
+                    toggleModal();
+                }
+            } catch(e) {
+                alert('网络错误，请稍后重试');
+            } finally {
+                btn.innerText = oldText; btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

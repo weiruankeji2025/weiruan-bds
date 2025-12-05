@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正在跳转 - 威软导航</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }</style>
+</head>
+<body>
+    <div class="text-center p-8 bg-slate-800/50 rounded-2xl border border-slate-700 backdrop-blur-xl max-w-sm w-full mx-4">
+        <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <img src="{{ link.icon if link.icon else 'https://www.google.com/s2/favicons?domain=' + link.url + '&sz=64' }}" class="w-8 h-8 rounded" onerror="this.style.display='none'">
+        </div>
+        <h2 class="text-xl font-bold mb-2">即将访问外部链接</h2>
+        <p class="text-blue-400 font-medium mb-1">{{ link.title }}</p>
+        <p class="text-slate-500 text-sm mb-6 truncate">{{ link.url }}</p>
+        
+        <div class="w-full bg-slate-700 rounded-full h-1.5 mb-6 overflow-hidden">
+            <div class="bg-blue-500 h-1.5 rounded-full" style="width: 0%" id="progress"></div>
+        </div>
+
+        <button onclick="goNow()" class="bg-blue-600 hover:bg-blue-500 text-white w-full py-2.5 rounded-lg text-sm font-bold transition-colors">立即跳转</button>
+    </div>
+
+    <script>
+        const targetUrl = "{{ link.url | safe }}";
+        // 倒计时动画
+        let width = 0;
+        const bar = document.getElementById('progress');
+        const interval = setInterval(() => {
+            width += 2;
+            bar.style.width = width + '%';
+            if (width >= 100) {
+                clearInterval(interval);
+                window.location.href = targetUrl;
+            }
+        }, 30); // 1.5秒后跳转
+
+        function goNow() {
+            window.location.href = targetUrl;
+        }
+    </script>
+</body>
+</html>
